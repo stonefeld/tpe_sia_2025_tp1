@@ -1,5 +1,9 @@
+# from src.heuristicas import heuristica_manhattan
+from src.sokoban import Sokoban
+
+
 def main():
-    print("Hello from tpe-sia-2025-tp1!")
+    juego = Sokoban("levels/lvl1.txt")
 
 
 if __name__ == "__main__":
