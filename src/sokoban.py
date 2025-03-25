@@ -1,5 +1,5 @@
-from enum import Enum
 import heapq
+from enum import Enum
 from itertools import count
 
 movimientos = {
@@ -100,13 +100,50 @@ class Sokoban:
                     new_node = TreeNode(new_player, new_boxes, move, node)
                     frontier.append(new_node)
         return None
-    
-    
+
+    def dfs(self):
+        root = TreeNode(self.player, frozenset(self.boxes))
+        frontier = [root]
+        visited = set()
+
+        while frontier:
+            # The main difference with BFS is here: pop from the end (stack behavior)
+            # instead of from the beginning (queue behavior)
+            node = frontier.pop()
+
+            if all(box in self.targets for box in node.boxes):
+                return node.get_path()
+
+            for move, (dx, dy) in movimientos.items():
+                new_player = (node.player[0] + dx, node.player[1] + dy)
+
+                if self.map[new_player[1]][new_player[0]] == Chars.WALL:
+                    continue
+
+                new_boxes = node.boxes
+
+                if new_player in node.boxes:
+                    new_box = (new_player[0] + dx, new_player[1] + dy)
+
+                    if new_box in node.boxes or self.map[new_box[1]][new_box[0]] == Chars.WALL:
+                        continue
+
+                    new_boxes = frozenset((new_box if box == new_player else box) for box in node.boxes)
+
+                new_state = (new_player, new_boxes)
+
+                if new_state not in visited:
+                    visited.add(new_state)
+                    new_node = TreeNode(new_player, new_boxes, move, node)
+                    frontier.append(new_node)
+
+        return None
+
     def informed_search(self, heuristic_fn, use_astar: bool):
         root = TreeNode(self.player, frozenset(self.boxes))
         frontier = []
         visited = set()
-        counter = count() # Para desempatar nodos con la misma prioridad y evitar comparar TreeNode vs TreeNode
+        counter = count()  # Para desempatar nodos con la misma prioridad y evitar comparar TreeNode vs TreeNode
 
         # (priority, g(n), TreeNode)
         h = heuristic_fn(root, self.targets)
@@ -145,9 +182,7 @@ class Sokoban:
                     heapq.heappush(frontier, (priority, next(counter), g_nuevo, new_node))
 
         return None
-    
-    
-    
+
 
 def heuristica_manhattan(node: TreeNode, targets: set[tuple[int, int]]) -> int:
     total = 0
