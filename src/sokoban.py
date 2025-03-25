@@ -192,3 +192,12 @@ def heuristica_manhattan(node: TreeNode, targets: set[tuple[int, int]]) -> int:
         # Tomar la mínima distancia para esta caja
         total += min(distancias)
     return total
+
+def heuristica_euclidean(node: TreeNode, targets: set[tuple[int, int]]) -> int:
+    total = 0
+    for box in node.boxes:
+        # Calcular la distancia euclidiana de esta caja a todos los objetivos
+        distancias = [((box[0] - goal[0])**2 + (box[1] - goal[1])**2)**0.5 for goal in targets]
+        # Tomar la mínima distancia para esta caja
+        total += min(distancias)
+    return total
