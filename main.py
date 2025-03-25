@@ -5,6 +5,10 @@ from src.sokoban import heuristica_manhattan
 
 
 def main():
+    if len(sys.argv) < 3:
+        print("Uso: python main.py <archivo> <algoritmo> [heurística]")
+        sys.exit()
+
     file = sys.argv[1]
     algo = sys.argv[2]
     heuristic = sys.argv[3].lower() if len(sys.argv) >= 4 else None
@@ -12,8 +16,8 @@ def main():
     game = SokobanVisualizer(file)
     if algo == "bfs":
         solution = game.bfs()
-    # elif algo == "dfs":
-    #      solution = game.dfs()
+    elif algo == "dfs":
+        solution = game.dfs()
     elif algo in {"greedy", "astar"}:
         if heuristic is None:
             print("Debe especificar una heurística para usar con greedy o astar.")
@@ -25,8 +29,7 @@ def main():
         # elif heuristic == "..."
         #     heuristic_fn = ...
         else:
-            print(f"Heurística no reconocida")
-            sys.exit(1)
+            raise ValueError("Heurística no válida")
 
         use_astar = algo == "astar"
         solution = game.informed_search(heuristic_fn, use_astar)
