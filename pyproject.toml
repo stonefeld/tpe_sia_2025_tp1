@@ -10,3 +10,6 @@ dependencies = [
     "pandas>=2.2.3",
     "pygame>=2.6.1",
 ]
+
+[tool.black]
+line-length = 160
