@@ -105,7 +105,7 @@ class Sokoban:
     def informed_search(self, heuristic_fn, use_astar: bool):
         root = TreeNode(self.player, frozenset(self.boxes))
         frontier = []
-        visited = set()
+        visited = dict()
         counter = count() # Para desempatar nodos con la misma prioridad y evitar comparar TreeNode vs TreeNode
 
         # (priority, g(n), TreeNode)
@@ -135,19 +135,20 @@ class Sokoban:
                     new_boxes = frozenset((new_box if box == new_player else box) for box in node.boxes)
 
                 new_state = (new_player, new_boxes)
+                new_g = g+1
 
-                if new_state not in visited:
-                    visited.add(new_state)
+                if new_state not in visited or new_g < visited[new_state]:
+                    visited[new_state] = new_g
                     new_node = TreeNode(new_player, new_boxes, move, node)
-                    g_nuevo = g + 1
                     h = heuristic_fn(new_node, self.targets)
-                    priority = h if not use_astar else g_nuevo + h
-                    heapq.heappush(frontier, (priority, next(counter), g_nuevo, new_node))
+                    priority = h if not use_astar else new_g + h
+                    heapq.heappush(frontier, (priority, next(counter), new_g, new_node))
+
 
         return None
     
     
-    
+
 
 def heuristica_manhattan(node: TreeNode, targets: set[tuple[int, int]]) -> int:
     total = 0
