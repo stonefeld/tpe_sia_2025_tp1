@@ -1,8 +1,8 @@
 import sys
+import time
 
+from src.sokoban import heuristica_manhattan, heuristica_euclidean
 from src.visualizer import SokobanVisualizer
-from src.sokoban import heuristica_manhattan
-from src.sokoban import heuristica_euclidean
 
 
 def main():
@@ -15,6 +15,10 @@ def main():
     heuristic = sys.argv[3].lower() if len(sys.argv) >= 4 else None
 
     game = SokobanVisualizer(file)
+
+    print(f"Ejecutando algoritmo: {algo}")
+    start_time = time.time()
+
     if algo == "bfs":
         solution = game.bfs()
     elif algo == "dfs":
@@ -28,7 +32,7 @@ def main():
         if heuristic == "manhattan":
             heuristic_fn = heuristica_manhattan
         elif heuristic == "euclidean":
-             heuristic_fn = heuristica_euclidean
+            heuristic_fn = heuristica_euclidean
         else:
             raise ValueError("Heurística no válida")
 
@@ -37,10 +41,14 @@ def main():
     else:
         raise ValueError("Algoritmo no válido")
 
-    print("Total de pasos: ", len(solution))
-    print("Solución: ", " ".join(solution))
+    end_time = time.time()
+    execution_time = end_time - start_time
 
-    game.play_solution(solution)
+    print(f"Tiempo de ejecución: {execution_time:.4f} segundos")
+    print(f"Total de pasos: {len(solution)}")
+    print(f"Solución: {' '.join(solution)}")
+
+    # game.play_solution(solution)
 
 
 if __name__ == "__main__":
