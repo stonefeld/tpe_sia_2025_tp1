@@ -2,6 +2,7 @@ import sys
 
 from src.visualizer import SokobanVisualizer
 from src.sokoban import heuristica_manhattan
+from src.sokoban import heuristica_euclidean
 
 
 def main():
@@ -26,8 +27,8 @@ def main():
 
         if heuristic == "manhattan":
             heuristic_fn = heuristica_manhattan
-        # elif heuristic == "..."
-        #     heuristic_fn = ...
+        elif heuristic == "euclidean":
+             heuristic_fn = heuristica_euclidean
         else:
             raise ValueError("Heurística no válida")
 
