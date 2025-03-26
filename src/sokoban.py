@@ -21,7 +21,7 @@ class Chars(str, Enum):
     PLAYER_ON_TARGET = "+"
 
 
-class TreeNode:
+class State:
     def __init__(self, player, boxes, move=None, parent=None):
         self.player = player
         self.boxes = boxes
@@ -68,7 +68,7 @@ class Sokoban:
         return map, player, boxes, targets
 
     def bfs(self):
-        root = TreeNode(self.player, frozenset(self.boxes))
+        root = State(self.player, frozenset(self.boxes))
         frontier = [root]
         visited = set()
 
@@ -91,6 +91,7 @@ class Sokoban:
                 if new_player in node.boxes:
                     new_box = (new_player[0] + dx, new_player[1] + dy)
 
+                    # Esto verifica si habían dos cajas seguidas o una caja y una pared
                     if new_box in node.boxes or self.map[new_box[1]][new_box[0]] == Chars.WALL:
                         continue
 
@@ -100,12 +101,13 @@ class Sokoban:
 
                 if new_state not in visited:
                     visited.add(new_state)
-                    new_node = TreeNode(new_player, new_boxes, move, node)
+                    new_node = State(new_player, new_boxes, move, node)
                     frontier.append(new_node)
+
         return None
 
     def dfs(self):
-        root = TreeNode(self.player, frozenset(self.boxes))
+        root = State(self.player, frozenset(self.boxes))
         frontier = [root]
         visited = set()
 
@@ -139,13 +141,13 @@ class Sokoban:
 
                 if new_state not in visited:
                     visited.add(new_state)
-                    new_node = TreeNode(new_player, new_boxes, move, node)
+                    new_node = State(new_player, new_boxes, move, node)
                     frontier.append(new_node)
 
         return None
 
     def informed_search(self, heuristic_fn, use_astar: bool):
-        root = TreeNode(self.player, frozenset(self.boxes))
+        root = State(self.player, frozenset(self.boxes))
         frontier = []
         visited = dict()
         counter = count()  # Para desempatar nodos con la misma prioridad y evitar comparar TreeNode vs TreeNode
@@ -183,7 +185,7 @@ class Sokoban:
 
                 if new_state not in visited or new_g < visited[new_state]:
                     visited[new_state] = new_g
-                    new_node = TreeNode(new_player, new_boxes, move, node)
+                    new_node = State(new_player, new_boxes, move, node)
                     h = heuristic_fn(new_node, self.targets)
                     priority = h if not use_astar else new_g + h
                     heapq.heappush(frontier, (priority, next(counter), new_g, new_node))
@@ -191,7 +193,7 @@ class Sokoban:
         return None
 
 
-def heuristica_manhattan(node: TreeNode, targets: set[tuple[int, int]]) -> int:
+def heuristica_manhattan(node: State, targets: set[tuple[int, int]]) -> int:
     total = 0
     for box in node.boxes:
         # Calcular la distancia de esta caja a todos los objetivos
@@ -201,7 +203,7 @@ def heuristica_manhattan(node: TreeNode, targets: set[tuple[int, int]]) -> int:
     return total
 
 
-def heuristica_euclidean(node: TreeNode, targets: set[tuple[int, int]]) -> int:
+def heuristica_euclidean(node: State, targets: set[tuple[int, int]]) -> int:
     total = 0
     for box in node.boxes:
         # Calcular la distancia euclidiana de esta caja a todos los objetivos
@@ -211,7 +213,7 @@ def heuristica_euclidean(node: TreeNode, targets: set[tuple[int, int]]) -> int:
     return total
 
 
-def improved_heuristic(node: TreeNode, targets: set[tuple[int, int]]) -> int:
+def improved_heuristic(node: State, targets: set[tuple[int, int]]) -> int:
     """Better heuristic using optimal box-target assignment"""
 
     if len(node.boxes) == 0 or len(targets) == 0:

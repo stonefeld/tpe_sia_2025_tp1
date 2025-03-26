@@ -2,7 +2,7 @@ import json
 import sys
 import time
 
-from src.sokoban import heuristica_euclidean, heuristica_manhattan, improved_heuristic
+from src.sokoban import heuristica_euclidean, heuristica_manhattan
 from src.visualizer import SokobanVisualizer
 
 
@@ -14,6 +14,10 @@ def main():
     file = sys.argv[1]
     algo = sys.argv[2]
     heuristic = sys.argv[3].lower() if len(sys.argv) >= 4 else None
+
+    # file = "levels/lvl7.txt"
+    # algo = "bfs"
+    # heuristic = "manhattan"
 
     game = SokobanVisualizer(file)
 
@@ -34,8 +38,6 @@ def main():
             heuristic_fn = heuristica_manhattan
         elif heuristic == "euclidean":
             heuristic_fn = heuristica_euclidean
-        elif heuristic == "imp":
-            heuristic_fn = improved_heuristic
         else:
             raise ValueError("Heurística no válida")
 
