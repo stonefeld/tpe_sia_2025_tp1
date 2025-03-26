@@ -71,13 +71,23 @@ class Sokoban:
         frontier = [root]
         visited = set()
 
+        frontier_count = 1
+        expanded_nodes = 0
+
         while frontier:
             node = frontier.pop(0)
+            expanded_nodes += 1
 
             if all(box in self.targets for box in node.boxes):
-                targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
-                return {"map": self.map, "targets": targets_dict, "steps": len(path), "path": path}
+                return {
+                    "map": self.map, 
+                    "targets": self.targets, 
+                    "frontier_nodes": frontier_count,
+                    "expanded_nodes": expanded_nodes,
+                    "steps": len(path), 
+                    "path": path,
+                }
 
             for move, (dx, dy) in movimientos.items():
                 new_player = (node.player[0] + dx, node.player[1] + dy)
@@ -90,7 +100,6 @@ class Sokoban:
                 if new_player in node.boxes:
                     new_box = (new_player[0] + dx, new_player[1] + dy)
 
-                    # Esto verifica si habían dos cajas seguidas o una caja y una pared
                     if new_box in node.boxes or self.map[new_box[1]][new_box[0]] == Chars.WALL:
                         continue
 
@@ -102,6 +111,7 @@ class Sokoban:
                     visited.add(new_state)
                     new_node = State(new_player, new_boxes, move, node)
                     frontier.append(new_node)
+                    frontier_count += 1
 
         return None
 
@@ -109,16 +119,25 @@ class Sokoban:
         root = State(self.player, frozenset(self.boxes))
         frontier = [root]
         visited = set()
+        
+        frontier_count = 1
+        expanded_nodes = 0
 
         while frontier:
-            # The main difference with BFS is here: pop from the end (stack behavior)
-            # instead of from the beginning (queue behavior)
             node = frontier.pop()
+            expanded_nodes += 1
 
             if all(box in self.targets for box in node.boxes):
                 targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
-                return {"map": self.map, "targets": targets_dict, "steps": len(path), "path": path}
+                return {
+                    "map": self.map, 
+                    "targets": targets_dict, 
+                    "steps": len(path), 
+                    "path": path,
+                    "frontier_nodes": frontier_count,
+                    "expanded_nodes": expanded_nodes
+                }
 
             for move, (dx, dy) in movimientos.items():
                 new_player = (node.player[0] + dx, node.player[1] + dy)
@@ -142,6 +161,7 @@ class Sokoban:
                     visited.add(new_state)
                     new_node = State(new_player, new_boxes, move, node)
                     frontier.append(new_node)
+                    frontier_count += 1
 
         return None
 
@@ -149,19 +169,29 @@ class Sokoban:
         root = State(self.player, frozenset(self.boxes))
         frontier = []
         visited = dict()
-        counter = count()  # Para desempatar nodos con la misma prioridad y evitar comparar TreeNode vs TreeNode
+        counter = count()
+        
+        frontier_count = 1
+        expanded_nodes = 0
 
-        # (priority, g(n), TreeNode)
         h = heuristic_fn(root, self.targets)
         heapq.heappush(frontier, (h, next(counter), 0, root))
 
         while frontier:
             _, _, g, node = heapq.heappop(frontier)
+            expanded_nodes += 1
 
             if all(box in self.targets for box in node.boxes):
                 targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
-                return {"map": self.map, "targets": targets_dict, "steps": len(path), "path": path}
+                return {
+                    "map": self.map, 
+                    "targets": targets_dict, 
+                    "steps": len(path), 
+                    "path": path,
+                    "frontier_nodes": frontier_count,
+                    "expanded_nodes": expanded_nodes
+                }
 
             for move, (dx, dy) in movimientos.items():
                 new_player = (node.player[0] + dx, node.player[1] + dy)
@@ -188,6 +218,7 @@ class Sokoban:
                     h = heuristic_fn(new_node, self.targets)
                     priority = h if not use_astar else new_g + h
                     heapq.heappush(frontier, (priority, next(counter), new_g, new_node))
+                    frontier_count += 1
 
         return None
 
@@ -199,7 +230,7 @@ def heuristica_manhattan(node: State, targets: set[tuple[int, int]]) -> int:
         distancias = [abs(box[0] - goal[0]) + abs(box[1] - goal[1]) for goal in targets]
         # Tomar la mínima distancia para esta caja
         total += min(distancias)
-        
+
     return total
 
 

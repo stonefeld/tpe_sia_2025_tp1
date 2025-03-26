@@ -52,6 +52,8 @@ def main():
 
     print(f"Tiempo de ejecución: {execution_time:.4f} segundos")
     print(f"Total de pasos: {solution.get("steps")}")
+    print(f"Nodos expandidos: {solution.get("expanded_nodes")}")
+    print(f"Nodos frontera: {solution.get("frontier_nodes")}")
     # print(f"Solución: {json.dumps(solution, indent=2)}")
 
     game.play_solution(solution)
