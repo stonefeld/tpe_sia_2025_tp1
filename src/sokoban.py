@@ -31,8 +31,10 @@ class TreeNode:
         path = []
         node = self
 
+        boxes_dict = [{"x": box[0], "y": box[1]} for box in self.boxes]
+
         while node.parent is not None:
-            path.append(node.move)
+            path.append({"player": self.player, "boxes": boxes_dict, "move": self.move})
             node = node.parent
 
         return path[::-1]
@@ -143,8 +145,7 @@ class Sokoban:
         root = TreeNode(self.player, frozenset(self.boxes))
         frontier = []
         visited = dict()
-        counter = count() # Para desempatar nodos con la misma prioridad y evitar comparar TreeNode vs TreeNode
-
+        counter = count()  # Para desempatar nodos con la misma prioridad y evitar comparar TreeNode vs TreeNode
 
         # (priority, g(n), TreeNode)
         h = heuristic_fn(root, self.targets)
@@ -154,7 +155,8 @@ class Sokoban:
             _, _, g, node = heapq.heappop(frontier)
 
             if all(box in self.targets for box in node.boxes):
-                return node.get_path()
+                targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
+                return {"map": self.map, "targets": targets_dict, "path": node.get_path()}
 
             for move, (dx, dy) in movimientos.items():
                 new_player = (node.player[0] + dx, node.player[1] + dy)
@@ -173,7 +175,7 @@ class Sokoban:
                     new_boxes = frozenset((new_box if box == new_player else box) for box in node.boxes)
 
                 new_state = (new_player, new_boxes)
-                new_g = g+1
+                new_g = g + 1
 
                 if new_state not in visited or new_g < visited[new_state]:
                     visited[new_state] = new_g
@@ -182,8 +184,8 @@ class Sokoban:
                     priority = h if not use_astar else new_g + h
                     heapq.heappush(frontier, (priority, next(counter), new_g, new_node))
 
-
         return None
+
 
 def heuristica_manhattan(node: TreeNode, targets: set[tuple[int, int]]) -> int:
     total = 0
@@ -194,11 +196,12 @@ def heuristica_manhattan(node: TreeNode, targets: set[tuple[int, int]]) -> int:
         total += min(distancias)
     return total
 
+
 def heuristica_euclidean(node: TreeNode, targets: set[tuple[int, int]]) -> int:
     total = 0
     for box in node.boxes:
         # Calcular la distancia euclidiana de esta caja a todos los objetivos
-        distancias = [((box[0] - goal[0])**2 + (box[1] - goal[1])**2)**0.5 for goal in targets]
+        distancias = [((box[0] - goal[0]) ** 2 + (box[1] - goal[1]) ** 2) ** 0.5 for goal in targets]
         # Tomar la mínima distancia para esta caja
         total += min(distancias)
     return total

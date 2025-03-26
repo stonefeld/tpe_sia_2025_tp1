@@ -1,7 +1,8 @@
+import json
 import sys
 import time
 
-from src.sokoban import heuristica_manhattan, heuristica_euclidean
+from src.sokoban import heuristica_euclidean, heuristica_manhattan
 from src.visualizer import SokobanVisualizer
 
 
@@ -38,6 +39,7 @@ def main():
 
         use_astar = algo == "astar"
         solution = game.informed_search(heuristic_fn, use_astar)
+
     else:
         raise ValueError("Algoritmo no válido")
 
@@ -46,9 +48,9 @@ def main():
 
     print(f"Tiempo de ejecución: {execution_time:.4f} segundos")
     print(f"Total de pasos: {len(solution)}")
-    print(f"Solución: {' '.join(solution)}")
+    print(f"Solución: {json.dumps(solution, indent=2)}")
 
-    # game.play_solution(solution)
+    game.play_solution(solution)
 
 
 if __name__ == "__main__":
