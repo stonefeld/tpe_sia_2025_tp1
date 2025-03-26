@@ -2,7 +2,7 @@ import json
 import sys
 import time
 
-from src.sokoban import heuristica_euclidean, heuristica_manhattan
+from src.sokoban import heuristica_euclidean, heuristica_manhattan, improved_heuristic
 from src.visualizer import SokobanVisualizer
 
 
@@ -34,6 +34,8 @@ def main():
             heuristic_fn = heuristica_manhattan
         elif heuristic == "euclidean":
             heuristic_fn = heuristica_euclidean
+        elif heuristic == "imp":
+            heuristic_fn = improved_heuristic
         else:
             raise ValueError("Heurística no válida")
 
@@ -47,8 +49,8 @@ def main():
     execution_time = end_time - start_time
 
     print(f"Tiempo de ejecución: {execution_time:.4f} segundos")
-    print(f"Total de pasos: {len(solution)}")
-    print(f"Solución: {json.dumps(solution, indent=2)}")
+    print(f"Total de pasos: {solution.get("steps")}")
+    # print(f"Solución: {json.dumps(solution, indent=2)}")
 
     game.play_solution(solution)
 

@@ -1,6 +1,7 @@
 import heapq
 from enum import Enum
 from itertools import count
+from scipy.optimize import linear_sum_assignment
 
 movimientos = {
     "UP": (0, -1),
@@ -31,10 +32,8 @@ class TreeNode:
         path = []
         node = self
 
-        boxes_dict = [{"x": box[0], "y": box[1]} for box in self.boxes]
-
         while node.parent is not None:
-            path.append({"player": self.player, "boxes": boxes_dict, "move": self.move})
+            path.append({"player": node.player, "boxes": node.boxes, "move": node.move})
             node = node.parent
 
         return path[::-1]
@@ -77,7 +76,9 @@ class Sokoban:
             node = frontier.pop(0)
 
             if all(box in self.targets for box in node.boxes):
-                return node.get_path()
+                targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
+                path = node.get_path()
+                return {"map": self.map, "targets": targets_dict, "steps": len(path), "path": path}
 
             for move, (dx, dy) in movimientos.items():
                 new_player = (node.player[0] + dx, node.player[1] + dy)
@@ -114,7 +115,9 @@ class Sokoban:
             node = frontier.pop()
 
             if all(box in self.targets for box in node.boxes):
-                return node.get_path()
+                targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
+                path = node.get_path()
+                return {"map": self.map, "targets": targets_dict, "steps": len(path), "path": path}
 
             for move, (dx, dy) in movimientos.items():
                 new_player = (node.player[0] + dx, node.player[1] + dy)
@@ -156,7 +159,8 @@ class Sokoban:
 
             if all(box in self.targets for box in node.boxes):
                 targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
-                return {"map": self.map, "targets": targets_dict, "path": node.get_path()}
+                path = node.get_path()
+                return {"map": self.map, "targets": targets_dict, "steps": len(path), "path": path}
 
             for move, (dx, dy) in movimientos.items():
                 new_player = (node.player[0] + dx, node.player[1] + dy)
@@ -205,3 +209,24 @@ def heuristica_euclidean(node: TreeNode, targets: set[tuple[int, int]]) -> int:
         # Tomar la mínima distancia para esta caja
         total += min(distancias)
     return total
+
+
+def improved_heuristic(node: TreeNode, targets: set[tuple[int, int]]) -> int:
+    """Better heuristic using optimal box-target assignment"""
+
+    if len(node.boxes) == 0 or len(targets) == 0:
+        return 0
+
+    # Create cost matrix
+    cost_matrix = []
+    for box in node.boxes:
+        row = []
+        for target in targets:
+            # Manhattan distance
+            dist = abs(box[0] - target[0]) + abs(box[1] - target[1])
+            row.append(dist)
+        cost_matrix.append(row)
+
+    # Solve assignment problem
+    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    return sum(cost_matrix[i][j] for i, j in zip(row_ind, col_ind))
