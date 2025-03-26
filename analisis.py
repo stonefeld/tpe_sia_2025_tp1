@@ -7,7 +7,6 @@ import numpy as np
 from src.sokoban import Sokoban, heuristica_euclidean, heuristica_manhattan
 
 def run_solver(file_path, algorithm, heuristic=None, runs=50):
-    """Run the Sokoban solver multiple times and return execution times and solution lengths."""
     times = []
     solution_lengths = []
     expanded_nodes = []
@@ -28,12 +27,12 @@ def run_solver(file_path, algorithm, heuristic=None, runs=50):
             elif heuristic == "euclidean":
                 heuristic_fn = heuristica_euclidean
             else:
-                raise ValueError("Invalid heuristic")
+                raise ValueError("Heurística inválida")
 
             use_astar = algorithm == "astar"
             solution = game.informed_search(heuristic_fn, use_astar)
         else:
-            raise ValueError("Invalid algorithm")
+            raise ValueError("Algoritmo inválido")
 
         end_time = time.time()
         execution_time = end_time - start_time
@@ -55,21 +54,39 @@ def run_solver(file_path, algorithm, heuristic=None, runs=50):
     }
 
 def plot_results(results, metric="time"):
-    """Plot results for the given metric with standard deviation if available."""
     levels = list(results.keys())
     algorithms = list(results[levels[0]].keys())
+
+    metric_key = {
+        "time": ("avg_time", "std_time", "Tiempo de ejecución (segundos)", "sokoban_time_comparison.png"),
+        "length": ("avg_length", "std_length", "Costo de la solución (pasos)", "sokoban_length_comparison.png"),
+        "expanded": ("avg_expanded", None, "Nodos expandidos", "sokoban_expanded_nodes_comparison.png"),
+        "frontier": ("avg_frontier", None, "Nodos frontera", "sokoban_frontier_nodes_comparison.png"),
+    }
+
+    for level in levels:
+        fig, ax = plt.subplots(figsize=(12, 8))
+        bar_width = 0.7
+        index = np.arange(len(algorithms))
+
+        values = [results[level][algo].get(metric_key[metric][0], 0) for algo in algorithms]
+        errors = [results[level][algo].get(metric_key[metric][1], 0) for algo in algorithms] if metric_key[metric][1] else None
+
+        ax.bar(index, values, bar_width, yerr=errors, capsize=5)
+        ax.set_xlabel("Algoritmo")
+        ax.set_ylabel(metric_key[metric][2])
+        ax.set_title(f"{metric_key[metric][2]} por Algoritmo en {level}")
+        ax.set_xticks(index)
+        ax.set_xticklabels(algorithms, rotation=45, ha="right")
+        ax.grid(axis="y", linestyle="--", alpha=0.6)
+
+        plt.tight_layout()
+        plt.savefig(f"sokoban_{metric}_comparison_{level}.png")
+        plt.close()
 
     fig, ax = plt.subplots(figsize=(12, 8))
     bar_width = 0.15
     index = np.arange(len(levels))
-
-    # Selección de métrica
-    metric_key = {
-        "time": ("avg_time", "std_time", "Execution Time (seconds)", "sokoban_time_comparison.png"),
-        "length": ("avg_length", "std_length", "Solution Length (steps)", "sokoban_length_comparison.png"),
-        "expanded": ("avg_expanded", None, "Expanded Nodes", "sokoban_expanded_nodes_comparison.png"),
-        "frontier": ("avg_frontier", None, "Frontier Nodes", "sokoban_frontier_nodes_comparison.png"),
-    }
 
     if metric not in metric_key:
         raise ValueError(f"Métrica no válida: {metric}")
@@ -83,9 +100,9 @@ def plot_results(results, metric="time"):
         position = index + (i - len(algorithms) / 2 + 0.5) * bar_width
         ax.bar(position, values, bar_width, label=algo, yerr=errors, capsize=5 if errors else 0)
 
-    ax.set_xlabel("Levels")
+    ax.set_xlabel("Nivel")
     ax.set_ylabel(ylabel)
-    ax.set_title(f"{ylabel} by Algorithm and Level")
+    ax.set_title(f"{ylabel} por Algoritmo y Nivel")
     ax.set_xticks(index)
     ax.set_xticklabels(levels)
     ax.legend()
@@ -121,8 +138,8 @@ def main():
 
             results[level_name][key] = run_solver(level_file, algo_name, heuristic)
 
-            print(f"  Average time: {results[level_name][key]['avg_time']:.4f}s")
-            print(f"  Average length: {results[level_name][key]['avg_length']:.2f} steps")
+            print(f"  Tiempo promedio: {results[level_name][key]['avg_time']:.4f}s")
+            print(f"  Costo promedio: {results[level_name][key]['avg_length']:.2f} pasos")
 
     with open("sokoban_results.json", "w") as f:
         json.dump(results, f, indent=2)
@@ -136,7 +153,7 @@ def main():
     ax.axis("off")
 
     table_data = []
-    headers = ["Level", "Algorithm", "Avg Time (s)", "Std Time", "Avg Length", "Std Length", "Avg Expanded", "Avg Frontier"]
+    headers = ["Nivel", "Algoritmo", "Tiempo promedio (s)", "Desvío estándar", "Costo promedio", "Desvío estándar", "Nodos exp. prom.", "Nodos front. prom."]
 
     for level in results:
         for algo in results[level]:
@@ -153,13 +170,16 @@ def main():
     table.set_fontsize(12)
     table.scale(1.2, 2)
 
-    plt.title("Sokoban Algorithm Performance Comparison", fontsize=16)
+    plt.title("Comparación de performance por algoritmo", fontsize=16)
     plt.tight_layout()
     plt.savefig("sokoban_performance_table.png")
 
     print("\nAnálisis completo! Los resultados se guardaron en:")
     for level in results:
         print(f"- sokoban_time_comparison_{level}.png")
+        print(f"- sokoban_length_comparison_{level}.png")
+        print(f"- sokoban_expanded_nodes_comparison_{level}.png")
+        print(f"- sokoban_frontier_nodes_comparison_{level}.png")
     print("- sokoban_time_comparison_combined.png")
     print("- sokoban_length_comparison.png")
     print("- sokoban_expanded_nodes_comparison.png")

@@ -135,10 +135,10 @@ class Sokoban:
                 return {
                     "map": self.map,
                     "targets": targets_dict,
-                    "steps": len(path),
-                    "path": path,
                     "frontier_nodes": frontier_count,
                     "expanded_nodes": expanded_nodes,
+                    "steps": len(path) - 1,
+                    "path": path,
                 }
 
             for move, (dx, dy) in movimientos.items():
@@ -188,10 +188,10 @@ class Sokoban:
                 return {
                     "map": self.map,
                     "targets": targets_dict,
-                    "steps": len(path),
-                    "path": path,
                     "frontier_nodes": frontier_count,
                     "expanded_nodes": expanded_nodes,
+                    "steps": len(path) - 1,
+                    "path": path,
                 }
 
             for move, (dx, dy) in movimientos.items():
