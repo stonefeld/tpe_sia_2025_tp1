@@ -1,7 +1,6 @@
 import heapq
 from enum import Enum
 from itertools import count
-from scipy.optimize import linear_sum_assignment
 
 movimientos = {
     "UP": (0, -1),
@@ -200,6 +199,7 @@ def heuristica_manhattan(node: State, targets: set[tuple[int, int]]) -> int:
         distancias = [abs(box[0] - goal[0]) + abs(box[1] - goal[1]) for goal in targets]
         # Tomar la mínima distancia para esta caja
         total += min(distancias)
+        
     return total
 
 
@@ -210,25 +210,5 @@ def heuristica_euclidean(node: State, targets: set[tuple[int, int]]) -> int:
         distancias = [((box[0] - goal[0]) ** 2 + (box[1] - goal[1]) ** 2) ** 0.5 for goal in targets]
         # Tomar la mínima distancia para esta caja
         total += min(distancias)
+
     return total
-
-
-def improved_heuristic(node: State, targets: set[tuple[int, int]]) -> int:
-    """Better heuristic using optimal box-target assignment"""
-
-    if len(node.boxes) == 0 or len(targets) == 0:
-        return 0
-
-    # Create cost matrix
-    cost_matrix = []
-    for box in node.boxes:
-        row = []
-        for target in targets:
-            # Manhattan distance
-            dist = abs(box[0] - target[0]) + abs(box[1] - target[1])
-            row.append(dist)
-        cost_matrix.append(row)
-
-    # Solve assignment problem
-    row_ind, col_ind = linear_sum_assignment(cost_matrix)
-    return sum(cost_matrix[i][j] for i, j in zip(row_ind, col_ind))
