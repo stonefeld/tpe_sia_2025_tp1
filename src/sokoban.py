@@ -31,8 +31,10 @@ class State:
         path = []
         node = self
 
-        while node.parent is not None:
-            path.append({"player": node.player, "boxes": node.boxes, "move": node.move})
+        while node is not None:
+            player = {"x": node.player[0], "y": node.player[1]}
+            boxes = [{"x": box[0], "y": box[1]} for box in node.boxes]
+            path.append({"player": player, "boxes": boxes, "move": node.move})
             node = node.parent
 
         return path[::-1]
@@ -79,13 +81,14 @@ class Sokoban:
 
             if all(box in self.targets for box in node.boxes):
                 frontier_count = len(frontier)
+                targets = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
                 return {
-                    "map": self.map, 
-                    "targets": self.targets, 
+                    "map": self.map,
+                    "targets": targets,
                     "frontier_nodes": frontier_count,
                     "expanded_nodes": expanded_nodes,
-                    "steps": len(path), 
+                    "steps": len(path) - 1,
                     "path": path,
                 }
 
@@ -118,7 +121,7 @@ class Sokoban:
         root = State(self.player, frozenset(self.boxes))
         frontier = [root]
         visited = set()
-        
+
         expanded_nodes = 0
 
         while frontier:
@@ -130,12 +133,12 @@ class Sokoban:
                 targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
                 return {
-                    "map": self.map, 
-                    "targets": targets_dict, 
-                    "steps": len(path), 
+                    "map": self.map,
+                    "targets": targets_dict,
+                    "steps": len(path),
                     "path": path,
                     "frontier_nodes": frontier_count,
-                    "expanded_nodes": expanded_nodes
+                    "expanded_nodes": expanded_nodes,
                 }
 
             for move, (dx, dy) in movimientos.items():
@@ -168,7 +171,7 @@ class Sokoban:
         frontier = []
         visited = dict()
         counter = count()
-        
+
         expanded_nodes = 0
 
         h = heuristic_fn(root, self.targets)
@@ -183,12 +186,12 @@ class Sokoban:
                 targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
                 return {
-                    "map": self.map, 
-                    "targets": targets_dict, 
-                    "steps": len(path), 
+                    "map": self.map,
+                    "targets": targets_dict,
+                    "steps": len(path),
                     "path": path,
                     "frontier_nodes": frontier_count,
-                    "expanded_nodes": expanded_nodes
+                    "expanded_nodes": expanded_nodes,
                 }
 
             for move, (dx, dy) in movimientos.items():
@@ -222,10 +225,9 @@ class Sokoban:
 
 def heuristica_manhattan(node: State, targets: set[tuple[int, int]]) -> int:
     total = 0
+    
     for box in node.boxes:
-        # Calcular la distancia de esta caja a todos los objetivos
         distancias = [abs(box[0] - goal[0]) + abs(box[1] - goal[1]) for goal in targets]
-        # Tomar la mínima distancia para esta caja
         total += min(distancias)
 
     return total
@@ -233,10 +235,9 @@ def heuristica_manhattan(node: State, targets: set[tuple[int, int]]) -> int:
 
 def heuristica_euclidean(node: State, targets: set[tuple[int, int]]) -> int:
     total = 0
+
     for box in node.boxes:
-        # Calcular la distancia euclidiana de esta caja a todos los objetivos
         distancias = [((box[0] - goal[0]) ** 2 + (box[1] - goal[1]) ** 2) ** 0.5 for goal in targets]
-        # Tomar la mínima distancia para esta caja
         total += min(distancias)
 
     return total
