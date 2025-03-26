@@ -71,7 +71,6 @@ class Sokoban:
         frontier = [root]
         visited = set()
 
-        frontier_count = 1
         expanded_nodes = 0
 
         while frontier:
@@ -79,6 +78,7 @@ class Sokoban:
             expanded_nodes += 1
 
             if all(box in self.targets for box in node.boxes):
+                frontier_count = len(frontier)
                 path = node.get_path()
                 return {
                     "map": self.map, 
@@ -111,7 +111,6 @@ class Sokoban:
                     visited.add(new_state)
                     new_node = State(new_player, new_boxes, move, node)
                     frontier.append(new_node)
-                    frontier_count += 1
 
         return None
 
@@ -120,7 +119,6 @@ class Sokoban:
         frontier = [root]
         visited = set()
         
-        frontier_count = 1
         expanded_nodes = 0
 
         while frontier:
@@ -128,6 +126,7 @@ class Sokoban:
             expanded_nodes += 1
 
             if all(box in self.targets for box in node.boxes):
+                frontier_count = len(frontier)
                 targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
                 return {
@@ -161,7 +160,6 @@ class Sokoban:
                     visited.add(new_state)
                     new_node = State(new_player, new_boxes, move, node)
                     frontier.append(new_node)
-                    frontier_count += 1
 
         return None
 
@@ -171,7 +169,6 @@ class Sokoban:
         visited = dict()
         counter = count()
         
-        frontier_count = 1
         expanded_nodes = 0
 
         h = heuristic_fn(root, self.targets)
@@ -182,6 +179,7 @@ class Sokoban:
             expanded_nodes += 1
 
             if all(box in self.targets for box in node.boxes):
+                frontier_count = len(frontier)
                 targets_dict = [{"x": target[0], "y": target[1]} for target in self.targets]
                 path = node.get_path()
                 return {
@@ -218,7 +216,6 @@ class Sokoban:
                     h = heuristic_fn(new_node, self.targets)
                     priority = h if not use_astar else new_g + h
                     heapq.heappush(frontier, (priority, next(counter), new_g, new_node))
-                    frontier_count += 1
 
         return None
 
