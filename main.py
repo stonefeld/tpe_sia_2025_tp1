@@ -48,6 +48,11 @@ def main():
     execution_time = end_time - start_time
 
     print(f"Tiempo de ejecución: {execution_time:.4f} segundos")
+
+    if solution is None:
+        print("No se encontró solución.")
+        sys.exit(0)
+        
     print(f"Total de pasos: {solution.get("steps")}")
     print(f"Nodos expandidos: {solution.get("expanded_nodes")}")
     print(f"Nodos frontera: {solution.get("frontier_nodes")}")
