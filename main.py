@@ -3,9 +3,8 @@ import sys
 import time
 from os.path import basename
 
-from src.sokoban import heuristica_euclidean, heuristica_manhattan
+from src.sokoban import Sokoban, heuristica_euclidean, heuristica_manhattan
 from src.visualizer import SokobanVisualizer
-from src.sokoban import Sokoban
 
 
 def main():
